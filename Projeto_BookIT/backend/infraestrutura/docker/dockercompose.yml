@@ -1,0 +1,39 @@
+name: bookit-db
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: bookit-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bookit
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5432:5432"
+    volumes:
+      - bookit-db-data:/var/lib/postgresql/data
+      - ../../db/BookIT.sql:/docker-entrypoint-initdb.d/01-bookit.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bookit"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: bookit-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - bookit-redis-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  bookit-db-data:
+  bookit-redis-data:
