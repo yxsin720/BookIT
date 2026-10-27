@@ -1,7 +1,35 @@
+import { useEffect, useState } from 'react'
+import { pedirEstado } from '../services/estadoService'
+
+const formatarHora = iso =>
+  new Date(iso).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
+
 export default function EstadoSistema() {
+  const [estado, setEstado] = useState(null)
+
+  useEffect(() => {
+    pedirEstado().then(setEstado)
+  }, [])
+
   return (
     <>
       <h1>Estado do sistema</h1>
+
+      {estado === null
+        ? <p>A verificar o sistema…</p>
+        : (
+          <>
+            <p>Atualizado às {formatarHora(estado.atualizado_em)}</p>
+
+            {estado.componentes.map(c => (
+              <div key={c.id} className="card">
+                <h2>{c.nome}</h2>
+                <p>{c.estado === 'ativo' ? 'Ativo' : 'Em baixo'}</p>
+                <p>{c.latencia_ms === null ? 'Sem resposta' : `${c.latencia_ms} ms`}</p>
+              </div>
+            ))}
+          </>
+        )}
     </>
   )
 }
