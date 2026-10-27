@@ -5,6 +5,7 @@ const LINKS = [
   { to: '/minhas-reservas', texto: 'As minhas reservas' },
   { to: '/recursos', texto: 'Recursos' },
   { to: '/gestor', texto: 'Painel do gestor' },
+  { to: '/utilizadores', texto: 'Utilizadores' },
 ]
 
 export default function Navbar() {
