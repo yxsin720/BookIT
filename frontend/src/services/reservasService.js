@@ -23,3 +23,8 @@ export async function criarReserva(opcao, pedido) {
   reservas = [...reservas, nova]
   return nova
 }
+
+export async function cancelarReserva(id) {
+  await esperar(300)
+  reservas = reservas.map(r => (r.id === id ? { ...r, estado: 'cancelada' } : r))
+}
