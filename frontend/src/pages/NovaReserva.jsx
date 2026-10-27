@@ -1,6 +1,11 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+const EQUIPAMENTOS = ['Projetor', 'Quadro', 'Videoconferência', 'Tomadas extra']
 
 export default function NovaReserva() {
+  const navigate = useNavigate()
+
   const [pedido, setPedido] = useState({
     tipo: 'sala',
     n_pessoas: 6,
@@ -9,16 +14,30 @@ export default function NovaReserva() {
     data_fim: '',
     periodo: 'tarde',
     edificio: '',
+    equipamentos: [],
   })
 
   const mudar = (campo, valor) => setPedido(p => ({ ...p, [campo]: valor }))
+
+  const alternar = nome => {
+    const jaEscolhido = pedido.equipamentos.includes(nome)
+    const novaLista = jaEscolhido
+      ? pedido.equipamentos.filter(e => e !== nome)
+      : [...pedido.equipamentos, nome]
+    mudar('equipamentos', novaLista)
+  }
+
+  const procurar = e => {
+    e.preventDefault()
+    navigate('/opcoes', { state: { pedido } })
+  }
 
   return (
     <>
       <h1>Nova reserva</h1>
       <p className="subtitulo">Diga-nos o que precisa e o BookIT sugere as melhores opções.</p>
 
-      <form>
+      <form onSubmit={procurar}>
         <label>
           Tipo de recurso
           <select value={pedido.tipo} onChange={e => mudar('tipo', e.target.value)}>
@@ -85,6 +104,27 @@ export default function NovaReserva() {
             <option value="Biblioteca">Biblioteca</option>
           </select>
         </label>
+
+        <div>
+          Equipamento necessário
+          <div>
+            {EQUIPAMENTOS.map(nome => {
+              const ativo = pedido.equipamentos.includes(nome)
+              return (
+                <button
+                  type="button"
+                  key={nome}
+                  aria-pressed={ativo}
+                  onClick={() => alternar(nome)}
+                >
+                  {nome}{ativo && ' ✓'}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <button>Procurar melhores opções</button>
       </form>
 
       <pre>{JSON.stringify(pedido, null, 2)}</pre>
