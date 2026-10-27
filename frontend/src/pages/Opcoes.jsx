@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { pedirOpcoes } from '../services/opcoesService'
+import { criarReserva } from '../services/reservasService'
 
 const formatarData = iso =>
   new Date(iso).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' })
@@ -10,14 +11,16 @@ const formatarHora = iso =>
 
 export default function Opcoes() {
   const { state } = useLocation()
+  const navigate = useNavigate()
   const [resultado, setResultado] = useState(null)
 
   useEffect(() => {
     pedirOpcoes(state?.pedido).then(setResultado)
   }, [state])
 
-  const reservar = opcao => {
-    console.log('Reservar:', opcao)
+  const reservar = async opcao => {
+    await criarReserva(opcao, state.pedido)
+    navigate('/minhas-reservas')
   }
 
   return (
