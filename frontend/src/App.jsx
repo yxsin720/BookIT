@@ -1,15 +1,28 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout.jsx'
+import Login from './pages/Login.jsx'
 import NovaReserva from './pages/NovaReserva.jsx'
 import Opcoes from './pages/Opcoes.jsx'
+import MinhasReservas from './pages/MinhasReservas.jsx'
+import Recursos from './pages/Recursos.jsx'
+import PainelGestor from './pages/PainelGestor.jsx'
+import Utilizadores from './pages/Utilizadores.jsx'
+import EstadoSistema from './pages/EstadoSistema.jsx'
 
 export default function App() {
   return (
     <Routes>
+      <Route path="login" element={<Login />} />
+
       <Route element={<Layout />}>
         <Route index element={<Navigate to="/nova-reserva" replace />} />
         <Route path="nova-reserva" element={<NovaReserva />} />
         <Route path="opcoes" element={<Opcoes />} />
+        <Route path="minhas-reservas" element={<MinhasReservas />} />
+        <Route path="recursos" element={<Recursos />} />
+        <Route path="gestor" element={<PainelGestor />} />
+        <Route path="utilizadores" element={<Utilizadores />} />
+        <Route path="estado" element={<EstadoSistema />} />
       </Route>
     </Routes>
   )
