@@ -28,7 +28,7 @@ export default function Login() {
   }
 
   return (
-    <>
+    <div className="login">
       <h1>Entrar</h1>
 
       <form onSubmit={submeter}>
@@ -58,6 +58,6 @@ export default function Login() {
           {aEntrar ? 'A entrar…' : 'Entrar'}
         </button>
       </form>
-    </>
+    </div>
   )
 }

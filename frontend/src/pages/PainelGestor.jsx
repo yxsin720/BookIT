@@ -31,7 +31,7 @@ export default function PainelGestor() {
         ? <p>A carregar painel…</p>
         : (
           <>
-            <div>
+            <div className="indicadores">
               <div className="card">
                 <p><strong>{painel.indicadores.reservas_ativas}</strong></p>
                 <p>Reservas ativas</p>
