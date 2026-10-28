@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 
 const EQUIPAMENTOS = ['Projetor', 'Quadro', 'Videoconferência', 'Tomadas extra']
 
-const INICIAL = {
+const PEDIDO_INICIAL = {
   tipo: 'sala',
   n_pessoas: 6,
   duracao_min: 120,
@@ -16,8 +16,7 @@ const INICIAL = {
 
 export default function NovaReserva() {
   const navigate = useNavigate()
-
-  const [pedido, setPedido] = useState(INICIAL)
+  const [pedido, setPedido] = useState(PEDIDO_INICIAL)
 
   const mudar = (campo, valor) => setPedido(p => ({ ...p, [campo]: valor }))
 
@@ -28,6 +27,8 @@ export default function NovaReserva() {
       : [...pedido.equipamentos, nome]
     mudar('equipamentos', novaLista)
   }
+
+  const limpar = () => setPedido(PEDIDO_INICIAL)
 
   const procurar = e => {
     e.preventDefault()
@@ -127,10 +128,8 @@ export default function NovaReserva() {
         </label>
 
         <div className="acoes">
-          <button>Procurar melhores opções</button>
-          <button type="button" className="secundario" onClick={() => setPedido(INICIAL)}>
-            Limpar
-          </button>
+          <button type="submit">Procurar melhores opções</button>
+          <button type="button" className="secundario" onClick={limpar}>Limpar</button>
         </div>
       </form>
     </>
