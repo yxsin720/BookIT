@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react'
 import { pedirReservas, cancelarReserva } from '../services/reservasService'
-
-const formatarData = iso =>
-  new Date(iso).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' })
-
-const formatarHora = iso =>
-  new Date(iso).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
+import { formatarData, formatarHora } from '../utils/datas'
 
 export default function MinhasReservas() {
   const [reservas, setReservas] = useState(null)
@@ -40,4 +35,4 @@ export default function MinhasReservas() {
             ))}
     </>
   )
-} 
+}
