@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext.jsx'
 
 const LINKS = [
   { to: '/nova-reserva', texto: 'Nova reserva' },
@@ -9,6 +10,8 @@ const LINKS = [
 ]
 
 export default function Navbar() {
+  const { utilizador } = useAuth()
+
   return (
     <header className="navbar">
       <div className="logo">
@@ -25,7 +28,9 @@ export default function Navbar() {
           </NavLink>
         ))}
       </nav>
-      <div className="navbar-user">Ana Ferreira (utilizador)</div>
+      <div className="navbar-user">
+        {utilizador ? `${utilizador.nome} (${utilizador.perfil})` : 'Sem sessão'}
+      </div>
     </header>
   )
 }
