@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 const EQUIPAMENTOS = ['Projetor', 'Quadro', 'Videoconferência', 'Tomadas extra']
 
@@ -126,6 +126,8 @@ export default function NovaReserva() {
 
         <button>Procurar melhores opções</button>
       </form>
+
+      <p><Link to="/reserva-manual">Prefiro escolher o espaço eu mesmo</Link></p>
 
       <pre>{JSON.stringify(pedido, null, 2)}</pre>
     </>
