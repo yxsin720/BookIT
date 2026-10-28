@@ -2,12 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { pedirOpcoes } from '../services/opcoesService'
 import { criarReserva } from '../services/reservasService'
-
-const formatarData = iso =>
-  new Date(iso).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' })
-
-const formatarHora = iso =>
-  new Date(iso).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
+import { formatarData, formatarHora } from '../utils/datas'
 
 export default function Opcoes() {
   const { state } = useLocation()

@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
 import { pedirEstado } from '../services/estadoService'
-
-const formatarHora = iso =>
-  new Date(iso).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
+import { formatarHora } from '../utils/datas'
 
 export default function EstadoSistema() {
   const [estado, setEstado] = useState(null)

@@ -1,12 +1,7 @@
 import { useEffect, useState } from 'react'
 import { pedirPainel } from '../services/painelService'
 import { pedirRecursos, marcarIndisponivel } from '../services/recursosService'
-
-const formatarData = iso =>
-  new Date(iso).toLocaleDateString('pt-PT', { weekday: 'long', day: 'numeric', month: 'long' })
-
-const formatarHora = iso =>
-  new Date(iso).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
+import { formatarData, formatarHora } from '../utils/datas'
 
 export default function PainelGestor() {
   const [painel, setPainel] = useState(null)
