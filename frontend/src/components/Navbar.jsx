@@ -8,6 +8,7 @@ const LINKS = [
   { to: '/minhas-reservas', texto: 'As minhas reservas', perfis: TODOS },
   { to: '/recursos', texto: 'Recursos', perfis: TODOS },
   { to: '/gestor', texto: 'Painel do gestor', perfis: ['gestor', 'administrador'] },
+   { to: '/estado', texto: 'Estado do sistema', perfis: ['gestor', 'administrador'] },
   { to: '/utilizadores', texto: 'Utilizadores', perfis: ['administrador'] },
 ]
 

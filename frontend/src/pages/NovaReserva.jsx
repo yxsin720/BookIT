@@ -127,9 +127,7 @@ export default function NovaReserva() {
         <button>Procurar melhores opções</button>
       </form>
 
-      <p><Link to="/reserva-manual">Prefiro escolher o espaço eu mesmo</Link></p>
-
-      <pre>{JSON.stringify(pedido, null, 2)}</pre>
+      <p><Link to="/reserva-manual">Escolher o espaço manualmente</Link></p>
     </>
   )
 }
