@@ -22,7 +22,11 @@ export default function EstadoSistema() {
             {estado.componentes.map(c => (
               <div key={c.id} className="card">
                 <h2>{c.nome}</h2>
-                <p>{c.estado === 'ativo' ? 'Ativo' : 'Em baixo'}</p>
+                <p>
+                  <span className={c.estado === 'ativo' ? 'estado ativo' : 'estado em-baixo'}>
+                    {c.estado === 'ativo' ? 'Ativo' : 'Em baixo'}
+                  </span>
+                </p>
                 <p>{c.latencia_ms === null ? 'Sem resposta' : `${c.latencia_ms} ms`}</p>
               </div>
             ))}

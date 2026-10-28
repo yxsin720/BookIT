@@ -175,6 +175,17 @@ tbody tr:last-child td { border-bottom: 0; }
 .login h1 { margin-bottom: 20px; }
 .login form { grid-template-columns: 1fr; }
 
+/* Estado do sistema */
+.estado {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.estado.ativo { background: #dcfce7; color: #14532d; }
+.estado.em-baixo { background: var(--vermelho-claro); color: #991b1b; }
+
 /* Ecrãs pequenos */
 @media (max-width: 760px) {
   .navbar { height: auto; flex-wrap: wrap; gap: 12px; padding: 10px 16px; }
