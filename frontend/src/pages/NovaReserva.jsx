@@ -1,21 +1,23 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 const EQUIPAMENTOS = ['Projetor', 'Quadro', 'Videoconferência', 'Tomadas extra']
+
+const INICIAL = {
+  tipo: 'sala',
+  n_pessoas: 6,
+  duracao_min: 120,
+  data_inicio: '',
+  data_fim: '',
+  periodo: 'tarde',
+  edificio: '',
+  equipamentos: [],
+}
 
 export default function NovaReserva() {
   const navigate = useNavigate()
 
-  const [pedido, setPedido] = useState({
-    tipo: 'sala',
-    n_pessoas: 6,
-    duracao_min: 120,
-    data_inicio: '',
-    data_fim: '',
-    periodo: 'tarde',
-    edificio: '',
-    equipamentos: [],
-  })
+  const [pedido, setPedido] = useState(INICIAL)
 
   const mudar = (campo, valor) => setPedido(p => ({ ...p, [campo]: valor }))
 
@@ -95,16 +97,6 @@ export default function NovaReserva() {
           </select>
         </label>
 
-        <label>
-          Edifício preferido (opcional)
-          <select value={pedido.edificio} onChange={e => mudar('edificio', e.target.value)}>
-            <option value="">Sem preferência</option>
-            <option value="A">Edifício A</option>
-            <option value="B">Edifício B</option>
-            <option value="Biblioteca">Biblioteca</option>
-          </select>
-        </label>
-
         <div>
           Equipamento necessário
           <div>
@@ -124,10 +116,23 @@ export default function NovaReserva() {
           </div>
         </div>
 
-        <button>Procurar melhores opções</button>
-      </form>
+        <label>
+          Edifício preferido (opcional)
+          <select value={pedido.edificio} onChange={e => mudar('edificio', e.target.value)}>
+            <option value="">Sem preferência</option>
+            <option value="A">Edifício A</option>
+            <option value="B">Edifício B</option>
+            <option value="Biblioteca">Biblioteca</option>
+          </select>
+        </label>
 
-      <p><Link to="/reserva-manual">Escolher o espaço manualmente</Link></p>
+        <div className="acoes">
+          <button>Procurar melhores opções</button>
+          <button type="button" className="secundario" onClick={() => setPedido(INICIAL)}>
+            Limpar
+          </button>
+        </div>
+      </form>
     </>
   )
 }

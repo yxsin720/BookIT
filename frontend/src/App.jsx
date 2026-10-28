@@ -33,6 +33,8 @@ export default function App() {
         <Route element={<RotaProtegida perfis={['administrador']} />}>
           <Route path="utilizadores" element={<Utilizadores />} />
         </Route>
+
+        <Route path="*" element={<Navigate to="/nova-reserva" replace />} />
       </Route>
     </Routes>
   )
