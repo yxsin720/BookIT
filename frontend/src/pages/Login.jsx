@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { entrar } from '../services/loginService'
 import { useAuth } from '../context/AuthContext.jsx'
 
@@ -28,8 +28,10 @@ export default function Login() {
   }
 
   return (
-    <div className="login">
+    <div className="auth">
+      <div className="logo">Book<span>IT</span></div>
       <h1>Entrar</h1>
+      <p className="subtitulo">Reserve salas, laboratórios e equipamentos num só sítio.</p>
 
       <form onSubmit={submeter}>
         <label>
@@ -58,6 +60,10 @@ export default function Login() {
           {aEntrar ? 'A entrar…' : 'Entrar'}
         </button>
       </form>
+
+      <p className="auth-rodape">
+        Ainda não tem conta? <Link to="/registo">Criar conta</Link>
+      </p>
     </div>
   )
 }

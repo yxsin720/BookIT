@@ -5,10 +5,18 @@ const esperar = ms => new Promise(resolve => setTimeout(resolve, ms))
 export async function entrar(email, password) {
   await esperar(300)
   const utilizadores = await pedirUtilizadores()
-  const utilizador = utilizadores.find(u => u.email === email)
+  const emailLimpo = email.trim().toLowerCase()
+  const utilizador = utilizadores.find(u => u.email === emailLimpo)
+  const passwordCerta = utilizador?.password ?? '1234'
 
-  if (!utilizador || password !== '1234') {
+  if (!utilizador || password !== passwordCerta) {
     throw new Error('Email ou palavra-passe incorretos.')
   }
-  return utilizador
+
+  return {
+    id: utilizador.id,
+    nome: utilizador.nome,
+    email: utilizador.email,
+    perfil: utilizador.perfil,
+  }
 }
