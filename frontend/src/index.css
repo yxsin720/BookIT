@@ -95,6 +95,7 @@ select {
   background: #fff;
   color: var(--texto);
 }
+select:disabled { opacity: 0.6; cursor: not-allowed; }
 [role='alert'] { color: #991b1b; font-weight: 700; }
 
 /* Formulários (Nova reserva, Login e Criar conta) */
@@ -257,23 +258,57 @@ tbody tr:last-child td { border-bottom: 0; }
   gap: 48px;
   align-items: center;
 }
-.selo {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 99px;
-  background: var(--vermelho-claro);
-  color: #991b1b;
-  font-size: 13px;
-  font-weight: 700;
-}
 .hero h1 { font-size: 48px; line-height: 1.1; margin: 16px 0; }
 .hero-sub { font-size: 18px; color: var(--texto-suave); max-width: 520px; margin: 0 0 28px; }
 .hero-exemplo .card { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); }
 
+/* Página inicial: secções e rodapé */
+.home-secao { max-width: 1100px; margin: 0 auto; padding: 56px 40px 0; scroll-margin-top: 24px; }
+.home-secao h2 { font-size: 26px; margin: 0 0 20px; }
+.passos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+.passos .card { margin: 0; }
+.passo-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  background: var(--vermelho-claro);
+  color: var(--vermelho-escuro);
+  font-weight: 700;
+}
+.perfis { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.perfis .card { margin: 0; }
+.home-rodape {
+  max-width: 1100px;
+  margin: 64px auto 0;
+  padding: 24px 40px 40px;
+  border-top: 1px solid var(--borda);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: var(--texto-suave);
+  font-size: 14px;
+}
+.home-rodape .logo { font-size: 18px; color: var(--texto); }
+
 @media (max-width: 760px) {
   .home-topo { padding: 12px 16px; flex-wrap: wrap; gap: 12px; }
   .home-topo nav { flex-basis: 100%; order: 3; margin-left: 0; gap: 16px; flex-wrap: wrap; }
-  .home-topo .botao { margin-left: auto; }
+  .home-topo .acoes { margin-left: auto; }
   .hero { padding: 40px 16px; }
   .hero h1 { font-size: 34px; }
+  .home-secao { padding: 40px 16px 0; }
+  .home-rodape { padding: 24px 16px 32px; }
 }

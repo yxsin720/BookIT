@@ -3,6 +3,7 @@ import Layout from './components/Layout.jsx'
 import RotaProtegida from './components/RotaProtegida.jsx'
 import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
+import Registo from './pages/Registo.jsx'
 import NovaReserva from './pages/NovaReserva.jsx'
 import Opcoes from './pages/Opcoes.jsx'
 import MinhasReservas from './pages/MinhasReservas.jsx'
@@ -16,6 +17,7 @@ export default function App() {
     <Routes>
       <Route index element={<Home />} />
       <Route path="login" element={<Login />} />
+      <Route path="registo" element={<Registo />} />
 
       <Route element={<Layout />}>
         <Route element={<RotaProtegida />}>
@@ -34,7 +36,7 @@ export default function App() {
           <Route path="utilizadores" element={<Utilizadores />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/nova-reserva" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   )
