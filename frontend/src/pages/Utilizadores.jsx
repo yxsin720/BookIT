@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useAuth } from '../context/AuthContext.jsx'
 import { pedirUtilizadores, alterarPerfil } from '../services/utilizadoresService'
 
 export default function Utilizadores() {
+  const { utilizador: eu } = useAuth()
   const [utilizadores, setUtilizadores] = useState(null)
 
   useEffect(() => {
@@ -9,6 +11,7 @@ export default function Utilizadores() {
   }, [])
 
   const mudarPerfil = async (id, perfil) => {
+    if (id === eu?.id) return
     await alterarPerfil(id, perfil)
     setUtilizadores(await pedirUtilizadores())
   }
@@ -16,6 +19,7 @@ export default function Utilizadores() {
   return (
     <>
       <h1>Utilizadores</h1>
+      <p className="subtitulo">Gira as contas e os perfis de acesso.</p>
 
       {utilizadores === null
         ? <p>A carregar utilizadores…</p>
@@ -29,19 +33,31 @@ export default function Utilizadores() {
               </tr>
             </thead>
             <tbody>
-              {utilizadores.map(u => (
-                <tr key={u.id}>
-                  <td>{u.nome}</td>
-                  <td>{u.email}</td>
-                  <td>
-                    <select value={u.perfil} onChange={e => mudarPerfil(u.id, e.target.value)}>
-                      <option value="utilizador">Utilizador</option>
-                      <option value="gestor">Gestor</option>
-                      <option value="administrador">Administrador</option>
-                    </select>
-                  </td>
-                </tr>
-              ))}
+              {utilizadores.map(u => {
+                const souEu = u.id === eu?.id
+                return (
+                  <tr key={u.id}>
+                    <td>
+                      {u.nome}
+                      {souEu && <span className="etiqueta">Você</span>}
+                    </td>
+                    <td>{u.email}</td>
+                    <td>
+                      <select
+                        value={u.perfil}
+                        disabled={souEu}
+                        title={souEu ? 'Não pode alterar o seu próprio perfil' : undefined}
+                        aria-label={`Perfil de ${u.nome}`}
+                        onChange={e => mudarPerfil(u.id, e.target.value)}
+                      >
+                        <option value="utilizador">Utilizador</option>
+                        <option value="gestor">Gestor</option>
+                        <option value="administrador">Administrador</option>
+                      </select>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         )}

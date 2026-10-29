@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout.jsx'
 import RotaProtegida from './components/RotaProtegida.jsx'
+import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
 import Registo from './pages/Registo.jsx'
 import NovaReserva from './pages/NovaReserva.jsx'
@@ -14,12 +15,11 @@ import EstadoSistema from './pages/EstadoSistema.jsx'
 export default function App() {
   return (
     <Routes>
+      <Route index element={<Home />} />
       <Route path="login" element={<Login />} />
       <Route path="registo" element={<Registo />} />
 
       <Route element={<Layout />}>
-        <Route index element={<Navigate to="/nova-reserva" replace />} />
-
         <Route element={<RotaProtegida />}>
           <Route path="nova-reserva" element={<NovaReserva />} />
           <Route path="opcoes" element={<Opcoes />} />
@@ -36,8 +36,8 @@ export default function App() {
           <Route path="utilizadores" element={<Utilizadores />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/nova-reserva" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   )
-}  
+}
