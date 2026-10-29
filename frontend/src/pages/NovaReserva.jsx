@@ -1,24 +1,46 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+
+const EQUIPAMENTOS = ['Projetor', 'Quadro', 'Videoconferência', 'Tomadas extra']
+
+const PEDIDO_INICIAL = {
+  tipo: 'sala',
+  n_pessoas: 6,
+  duracao_min: 120,
+  data_inicio: '',
+  data_fim: '',
+  periodo: 'tarde',
+  edificio: '',
+  equipamentos: [],
+}
 
 export default function NovaReserva() {
-  const [pedido, setPedido] = useState({
-    tipo: 'sala',
-    n_pessoas: 6,
-    duracao_min: 120,
-    data_inicio: '',
-    data_fim: '',
-    periodo: 'tarde',
-    edificio: '',
-  })
+  const navigate = useNavigate()
+  const [pedido, setPedido] = useState(PEDIDO_INICIAL)
 
   const mudar = (campo, valor) => setPedido(p => ({ ...p, [campo]: valor }))
+
+  const alternar = nome => {
+    const jaEscolhido = pedido.equipamentos.includes(nome)
+    const novaLista = jaEscolhido
+      ? pedido.equipamentos.filter(e => e !== nome)
+      : [...pedido.equipamentos, nome]
+    mudar('equipamentos', novaLista)
+  }
+
+  const limpar = () => setPedido(PEDIDO_INICIAL)
+
+  const procurar = e => {
+    e.preventDefault()
+    navigate('/opcoes', { state: { pedido } })
+  }
 
   return (
     <>
       <h1>Nova reserva</h1>
       <p className="subtitulo">Diga-nos o que precisa e o BookIT sugere as melhores opções.</p>
 
-      <form>
+      <form onSubmit={procurar}>
         <label>
           Tipo de recurso
           <select value={pedido.tipo} onChange={e => mudar('tipo', e.target.value)}>
@@ -76,6 +98,25 @@ export default function NovaReserva() {
           </select>
         </label>
 
+        <div>
+          Equipamento necessário
+          <div>
+            {EQUIPAMENTOS.map(nome => {
+              const ativo = pedido.equipamentos.includes(nome)
+              return (
+                <button
+                  type="button"
+                  key={nome}
+                  aria-pressed={ativo}
+                  onClick={() => alternar(nome)}
+                >
+                  {nome}{ativo && ' ✓'}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
         <label>
           Edifício preferido (opcional)
           <select value={pedido.edificio} onChange={e => mudar('edificio', e.target.value)}>
@@ -85,9 +126,12 @@ export default function NovaReserva() {
             <option value="Biblioteca">Biblioteca</option>
           </select>
         </label>
-      </form>
 
-      <pre>{JSON.stringify(pedido, null, 2)}</pre>
+        <div className="acoes">
+          <button type="submit">Procurar melhores opções</button>
+          <button type="button" className="secundario" onClick={limpar}>Limpar</button>
+        </div>
+      </form>
     </>
   )
 }
