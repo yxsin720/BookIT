@@ -4,11 +4,12 @@ from datetime import timedelta
 
 from backtracking import backtracking
 from custo import custo_total
+from heuristicas import backtracking_fc
 from modelo import criar_dominios, criar_variaveis
 from restricoes import aplicar_restricoes_unarias
 
 
-def planear_sessoes(pedido, recursos, reservas):
+def planear_sessoes(pedido, recursos, reservas, metodo="fc"):
     """Encontra uma sala e um horário para cada sessão pedida."""
     recursos_por_id = {r["id"]: r for r in recursos}
 
@@ -23,9 +24,10 @@ def planear_sessoes(pedido, recursos, reservas):
 
     dominios = {v: sorted(valores, key=custo) for v, valores in dominios.items()}
 
-    # 3. Procurar
+    # 3. Procurar: "fc" = MRV + forward checking; "simples" = backtracking simples
     estatisticas = {"nos": 0}
-    solucao = backtracking(variaveis, dominios, pedido, estatisticas=estatisticas)
+    procurar = backtracking_fc if metodo == "fc" else backtracking
+    solucao = procurar(variaveis, dominios, pedido, estatisticas=estatisticas)
 
     if solucao is None:
         return {"sessoes": [], "custo_total": None, "nos_explorados": estatisticas["nos"]}
@@ -39,7 +41,7 @@ def planear_sessoes(pedido, recursos, reservas):
             "fim": (inicio + timedelta(minutes=pedido["duracao_min"])).isoformat(),
             "custo": round(custo((recurso_id, inicio)), 2),
         }
-        for variavel, (recurso_id, inicio) in solucao.items()
+        for variavel, (recurso_id, inicio) in sorted(solucao.items())
     ]
     return {
         "sessoes": sessoes,
