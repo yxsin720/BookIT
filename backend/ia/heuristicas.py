@@ -10,22 +10,24 @@ def escolher_variavel_mrv(livres, dominios):
     return min(livres, key=lambda v: len(dominios[v]))
 
 
-def forward_checking(variavel, valor, livres, dominios, pedido):
+def forward_checking(variavel, valor, livres, dominios, pedido, compat=compativeis):
     """Depois de escolher um valor, tira dos domínios das outras variáveis
     tudo o que deixou de ser compatível. Devolve None se algum domínio ficar vazio."""
     novos = {}
     for outra in livres:
         if outra == variavel:
             continue
-        filtrado = [w for w in dominios[outra] if compativeis(valor, w, pedido)]
+        filtrado = [w for w in dominios[outra] if compat(valor, w, pedido)]
         if not filtrado:
             return None          # beco sem saída detetado JÁ, sem descer mais
         novos[outra] = filtrado
     return novos
 
 
-def backtracking_fc(variaveis, dominios, pedido, atribuicao=None, estatisticas=None):
-    """Igual ao backtracking simples, mas com MRV e forward checking."""
+def backtracking_fc(variaveis, dominios, pedido, atribuicao=None, estatisticas=None,
+                    compat=compativeis):
+    """Igual ao backtracking simples, mas com MRV e forward checking.
+    `compat` é a regra que diz se dois valores podem coexistir (por defeito, B1+B2+B3)."""
     if atribuicao is None:
         atribuicao = {}
     if estatisticas is None:
@@ -40,13 +42,13 @@ def backtracking_fc(variaveis, dominios, pedido, atribuicao=None, estatisticas=N
     for valor in dominios[variavel]:
         estatisticas["nos"] += 1
 
-        novos = forward_checking(variavel, valor, livres, dominios, pedido)
+        novos = forward_checking(variavel, valor, livres, dominios, pedido, compat)
         if novos is None:
             continue             # este valor deixava outra variável sem opções
 
         atribuicao[variavel] = valor
         resultado = backtracking_fc(variaveis, {**dominios, **novos}, pedido,
-                                    atribuicao, estatisticas)
+                                    atribuicao, estatisticas, compat)
         if resultado is not None:
             return resultado
         del atribuicao[variavel]
