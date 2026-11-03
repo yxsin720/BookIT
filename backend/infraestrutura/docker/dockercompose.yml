@@ -50,6 +50,12 @@ services:
       redis:
         condition: service_healthy
 
+  ia:
+    build: ../../ia
+    restart: on-failure
+    expose:
+      - "8001"
+
   nginx:
     image: nginx:alpine
     container_name: bookit-nginx
