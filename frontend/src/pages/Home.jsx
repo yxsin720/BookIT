@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 
+const ANO = new Date().getFullYear()
+
 const PASSOS = [
   {
     titulo: 'Diga o que precisa',
@@ -18,14 +20,17 @@ const PASSOS = [
 
 const PERFIS = [
   {
+    icone: '🎓',
     nome: 'Utilizadores',
     texto: 'Procuram e reservam salas, laboratórios e equipamentos, e acompanham as suas reservas.',
   },
   {
+    icone: '📊',
     nome: 'Gestores',
     texto: 'Acompanham a ocupação, marcam recursos como indisponíveis e veem as reservas reatribuídas.',
   },
   {
+    icone: '🛡️',
     nome: 'Administradores',
     texto: 'Gerem as contas e os perfis de acesso, e acompanham o estado do sistema.',
   },
@@ -63,7 +68,10 @@ export default function Home() {
 
       <section className="hero">
         <div>
-          <h1>O espaço certo, à primeira.</h1>
+          <span className="hero-selo">Reservas inteligentes para o campus</span>
+          <h1>
+            O espaço certo, <span className="texto-gradiente">à primeira.</span>
+          </h1>
           <p className="hero-sub">
             Diga-nos o que precisa e o BookIT sugere as melhores salas, laboratórios e lugares de estudo do campus.
           </p>
@@ -71,6 +79,12 @@ export default function Home() {
           <div className="acoes">
             <Link className="botao" to={destino}>Reservar agora</Link>
             <a className="botao secundario" href="#como-funciona">Ver como funciona</a>
+          </div>
+
+          <div className="hero-tipos">
+            <span>🏫 Salas</span>
+            <span>🔬 Laboratórios</span>
+            <span>🎥 Equipamentos</span>
           </div>
         </div>
 
@@ -84,6 +98,15 @@ export default function Home() {
               </h2>
               <p>Qui 29/10, 14:00 - 16:00 · capacidade 8</p>
               <small>Edifício preferido · horário com baixa procura</small>
+            </div>
+          </article>
+
+          <article className="card opcao">
+            <div className="score media">85</div>
+            <div className="opcao-info">
+              <h2>Sala 1.02</h2>
+              <p>Qui 29/10, 16:00 - 18:00 · capacidade 6</p>
+              <small>Lotação exata · procura média</small>
             </div>
           </article>
         </div>
@@ -107,6 +130,7 @@ export default function Home() {
         <div className="perfis">
           {PERFIS.map(p => (
             <article key={p.nome} className="card">
+              <span className="perfil-icone" aria-hidden="true">{p.icone}</span>
               <h3>{p.nome}</h3>
               <p>{p.texto}</p>
             </article>
@@ -114,11 +138,21 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="home-cta">
+        <h2>Pronto para reservar?</h2>
+        <p>Crie a sua conta e encontre o espaço ideal em poucos cliques.</p>
+        <div className="acoes">
+          <Link className="botao" to={utilizador ? '/nova-reserva' : '/registo'}>
+            {utilizador ? 'Ir para a aplicação' : 'Criar conta'}
+          </Link>
+        </div>
+      </section>
+
       <footer className="home-rodape">
         <span className="logo">
           Book<span>IT</span>
         </span>
-        <span>Reservas de espaços do campus · {new Date().getFullYear()}</span>
+        <span>Reservas de espaços do campus · {ANO}</span>
       </footer>
     </div>
   )
