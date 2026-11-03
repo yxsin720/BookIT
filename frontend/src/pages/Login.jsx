@@ -29,7 +29,7 @@ export default function Login() {
 
   return (
     <div className="auth">
-      <div className="logo">Book<span>IT</span></div>
+      <Link to="/" className="logo">Book<span>IT</span></Link>
       <h1>Entrar</h1>
       <p className="subtitulo">Reserve salas, laboratórios e equipamentos num só sítio.</p>
 
@@ -63,6 +63,9 @@ export default function Login() {
 
       <p className="auth-rodape">
         Ainda não tem conta? <Link to="/registo">Criar conta</Link>
+      </p>
+      <p className="auth-rodape">
+        <Link to="/">← Voltar ao início</Link>
       </p>
     </div>
   )
