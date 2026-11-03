@@ -43,7 +43,7 @@ export default function Registo() {
 
   return (
     <div className="auth">
-      <div className="logo">Book<span>IT</span></div>
+      <Link to="/" className="logo">Book<span>IT</span></Link>
       <h1>Criar conta</h1>
       <p className="subtitulo">Registe-se para começar a reservar espaços.</p>
 
@@ -97,6 +97,9 @@ export default function Registo() {
 
       <p className="auth-rodape">
         Já tem conta? <Link to="/login">Entrar</Link>
+      </p>
+      <p className="auth-rodape">
+        <Link to="/">← Voltar ao início</Link>
       </p>
     </div>
   )
