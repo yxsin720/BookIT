@@ -19,7 +19,7 @@ export default function Navbar() {
 
   const sair = () => {
     terminarSessao()
-    navigate('/login')
+    navigate('/')
   }
 
   return (
