@@ -5,7 +5,8 @@ from sqlalchemy.exc import OperationalError
 
 from app.config import INSTANCIA
 from app.database import consultar
-from app.routers import recursos
+from app.routers import auth, recursos
+app.include_router(recursos.router)
 
 app = FastAPI(title="BookIT - API de reservas")
 
