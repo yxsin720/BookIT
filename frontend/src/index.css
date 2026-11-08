@@ -208,7 +208,9 @@ form button[aria-pressed='true'] {
   margin-bottom: 8px;
 }
 .indicadores .card { margin: 0; }
-.indicadores strong { font-size: 34px; }
+.indicadores span { color: var(--texto-suave); font-size: 15px; }
+.indicadores strong { display: block; margin-top: 2px; font-size: 34px; }
+.indicadores .alerta strong { color: var(--vermelho-escuro); }
 
 /* Tabela (Utilizadores) */
 table {
@@ -668,3 +670,43 @@ form.reserva {
   color: #78350f;
   font-size: 14px;
 }
+
+/* ---------- Recursos ---------- */
+.filtros { display: flex; flex-wrap: wrap; gap: 20px 32px; margin-bottom: 24px; }
+.recursos-grelha { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.recurso { display: flex; flex-direction: column; box-shadow: var(--sombra); }
+.recurso.indisponivel { opacity: 0.75; }
+.recurso .espaco-corpo { flex: 1; }
+.recurso-meta { display: block; margin-top: 2px; }
+.recurso-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 0 16px 16px;
+}
+.recurso .estado { font-size: 13px; }
+.recurso-rodape button { padding: 8px 16px; font-size: 14px; }
+
+/* ---------- Painel do gestor ---------- */
+.painel-linha { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 20px; margin-bottom: 12px; }
+.mini-foto {
+  flex: 0 0 72px;
+  height: 50px;
+  border-radius: 8px;
+  background: #e5e7eb center / cover;
+  color: #6b7280;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.painel-nome { flex: 1; min-width: 180px; }
+.painel-nome b { display: block; font-size: 17px; }
+.painel-nome small { color: var(--texto-suave); }
+.painel-linha .estado { font-size: 13px; }
+.painel-linha button { padding: 8px 16px; font-size: 14px; }
+.hist-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 20px; margin-bottom: 12px; }
+.hist-item small { display: block; margin-top: 2px; color: var(--texto-suave); }
+.hist-item .estado { font-size: 13px; }
