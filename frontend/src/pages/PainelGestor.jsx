@@ -54,7 +54,6 @@ export default function PainelGestor() {
               const disponivel = r.estado === 'disponivel'
               return (
                 <div key={r.id} className="card painel-linha">
-                  <div className="mini-foto">Foto</div>
 
                   <div className="painel-nome">
                     <b>{r.nome}</b>

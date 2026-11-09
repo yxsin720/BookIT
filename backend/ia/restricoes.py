@@ -28,10 +28,18 @@ def tem_equipamento(pedido, recurso):
 
 
 def dentro_do_horario(recurso, inicio, fim):
-    """U4: começa depois de a sala abrir e acaba antes de fechar."""
-    return (inicio.time() >= para_hora(recurso["abertura"])
+    """U4: a sala está aberta nesse dia, começa depois de abrir e acaba antes de fechar."""
+    dia_semana = inicio.isoweekday() % 7  # 0 = domingo, como na base de dados
+    return (dia_semana in recurso.get("dias", range(7))
+            and inicio.time() >= para_hora(recurso["abertura"])
             and fim.time() <= para_hora(recurso["fecho"])
             and inicio.date() == fim.date())
+
+
+def ainda_nao_passou(pedido, inicio):
+    """U7: não sugerir horas que já passaram."""
+    nao_antes = pedido.get("nao_antes")
+    return not nao_antes or inicio >= datetime.fromisoformat(nao_antes)
 
 
 def sala_livre(recurso, inicio, fim, reservas):
@@ -57,6 +65,7 @@ def valor_valido(valor, pedido, recursos_por_id, reservas):
             and tem_capacidade(pedido, recurso)
             and tem_equipamento(pedido, recurso)
             and dentro_do_horario(recurso, inicio, fim)
+            and ainda_nao_passou(pedido, inicio)
             and sala_livre(recurso, inicio, fim, reservas))
 
 

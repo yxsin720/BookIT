@@ -13,6 +13,9 @@ def carregar_recursos():
                         '{}') AS equipamentos,
                to_char(COALESCE(min(h.abertura), '08:00'), 'HH24:MI') AS abertura,
                to_char(COALESCE(max(h.fecho), '22:00'), 'HH24:MI') AS fecho,
+               -- dias da semana em que abre (0 = domingo); sem horário = todos
+               COALESCE(array_agg(DISTINCT h.dia_semana) FILTER (WHERE h.dia_semana IS NOT NULL),
+                        '{0,1,2,3,4,5,6}') AS dias,
                r.ativo
         FROM recursos r
         JOIN tipos_recurso t ON t.id = r.tipo_id
@@ -22,6 +25,12 @@ def carregar_recursos():
         GROUP BY r.id, t.nome
         ORDER BY r.id
     """)
+
+
+def agora_lisboa():
+    """A hora atual em Lisboa, sem fuso (ex.: "2026-11-09T16:07"). Vem da BD, que já sabe o fuso."""
+    return consultar("SELECT to_char(now() AT TIME ZONE 'Europe/Lisbon', "
+                     "'YYYY-MM-DD\"T\"HH24:MI') AS agora")[0]["agora"]
 
 
 def carregar_reservas(data_inicio, data_fim):

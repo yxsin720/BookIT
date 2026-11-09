@@ -1,16 +1,7 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-
-const EQUIPAMENTOS = ['Projetor', 'Quadro', 'Videoconferência', 'Tomadas extra']
-
-// Para pôr uma foto num tipo: guarde-a em frontend/public/recursos/ e
-// troque o null por '/recursos/nome-da-foto.jpg'
-const TIPOS = [
-  { valor: 'sala', nome: 'Sala de estudo', texto: 'Para grupos e trabalhos', imagem: null },
-  { valor: 'laboratorio', nome: 'Laboratório', texto: 'Com computadores', imagem: null },
-  { valor: 'equipamento', nome: 'Equipamento', texto: 'Projetor, HDMI, portátil', imagem: null },
-  { valor: 'lugar', nome: 'Lugar de estudo', texto: 'Um canto sossegado', imagem: null },
-]
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { pedirRecursos } from '../services/recursosService'
+import { maiuscula, NOMES_TIPO, nomeEdificio } from '../utils/recursos'
 
 const DURACOES = [
   { valor: 60, nome: '1 hora' },
@@ -24,15 +15,7 @@ const PERIODOS = [
   { valor: 'qualquer', nome: 'Qualquer' },
 ]
 
-const EDIFICIOS = [
-  { valor: '', nome: 'Sem preferência' },
-  { valor: 'A', nome: 'Edifício A' },
-  { valor: 'B', nome: 'Edifício B' },
-  { valor: 'Biblioteca', nome: 'Biblioteca' },
-]
-
 const PEDIDO_INICIAL = {
-  tipo: 'sala',
   n_pessoas: 6,
   duracao_min: 120,
   data_inicio: '',
@@ -73,7 +56,28 @@ function Chips({ opcoes, valor, aoEscolher }) {
 
 export default function NovaReserva() {
   const navigate = useNavigate()
-  const [pedido, setPedido] = useState(PEDIDO_INICIAL)
+  const { state } = useLocation()
+  // "Reservar" na página Recursos já traz o tipo escolhido
+  const [pedido, setPedido] = useState(() => ({ ...PEDIDO_INICIAL, tipo: state?.tipo ?? 'sala' }))
+  const [recursos, setRecursos] = useState([])
+
+  // As opções do formulário vêm dos recursos que existem mesmo na base de dados
+  useEffect(() => {
+    pedirRecursos().then(setRecursos).catch(() => setRecursos([]))
+  }, [])
+
+  const ativos = recursos.filter(r => r.ativo)
+  const unicos = lista => [...new Set(lista)].sort()
+  const TIPOS = unicos([...ativos.map(r => r.tipo), pedido.tipo]).map(t => ({
+    valor: t,
+    nome: NOMES_TIPO[t] ?? maiuscula(t),
+  }))
+  const doTipo = ativos.filter(r => r.tipo === pedido.tipo)
+  const EQUIPAMENTOS = unicos(doTipo.flatMap(r => r.equipamentos))
+  const EDIFICIOS = [
+    { valor: '', nome: 'Sem preferência' },
+    ...unicos(doTipo.map(r => r.edificio).filter(Boolean)).map(e => ({ valor: e, nome: nomeEdificio(e) })),
+  ]
 
   const mudar = (campo, valor) => setPedido(p => ({ ...p, [campo]: valor }))
 
@@ -85,7 +89,7 @@ export default function NovaReserva() {
     mudar('equipamentos', novaLista)
   }
 
-  const limpar = () => setPedido(PEDIDO_INICIAL)
+  const limpar = () => setPedido({ ...PEDIDO_INICIAL, tipo: 'sala' })
 
   const procurar = e => {
     e.preventDefault()
@@ -109,7 +113,7 @@ export default function NovaReserva() {
         ? `${curto(pedido.data_inicio)} a ${curto(pedido.data_fim)}`
         : curto(pedido.data_inicio)
   }
-  const tipoEscolhido = TIPOS.find(t => t.valor === pedido.tipo)
+  const tipoEscolhido = TIPOS.find(t => t.valor === pedido.tipo) ?? { nome: pedido.tipo }
   const periodoEscolhido = PERIODOS.find(p => p.valor === pedido.periodo)
   const edificioEscolhido = EDIFICIOS.find(e => e.valor === pedido.edificio)
   const duracaoEscolhida = DURACOES.find(d => d.valor === pedido.duracao_min)
@@ -126,26 +130,12 @@ export default function NovaReserva() {
             <section className="reserva-bloco">
               <h2><span>1</span> O que quer reservar?</h2>
 
-              <div className="tipos">
-                {TIPOS.map(t => (
-                  <button
-                    type="button"
-                    key={t.valor}
-                    className={pedido.tipo === t.valor ? 'tipo-card ativo' : 'tipo-card'}
-                    aria-pressed={pedido.tipo === t.valor}
-                    onClick={() => mudar('tipo', t.valor)}
-                  >
-                    <span
-                      className="tipo-foto"
-                      style={t.imagem ? { backgroundImage: `url(${t.imagem})` } : undefined}
-                    >
-                      {!t.imagem && 'Foto'}
-                    </span>
-                    <span className="tipo-nome">{t.nome}</span>
-                    <span className="tipo-texto">{t.texto}</span>
-                  </button>
-                ))}
-              </div>
+              <Chips
+                opcoes={TIPOS}
+                valor={pedido.tipo}
+                // ao mudar de tipo, o equipamento e o edifício escolhidos podem já não existir
+                aoEscolher={v => setPedido(p => ({ ...p, tipo: v, equipamentos: [], edificio: '' }))}
+              />
 
               <div className="campo">
                 <span className="campo-rotulo">Quantas pessoas?</span>
@@ -248,6 +238,7 @@ export default function NovaReserva() {
             {/* 3. Equipamento */}
             <section className="reserva-bloco">
               <h2><span>3</span> Precisa de equipamento?</h2>
+              {EQUIPAMENTOS.length === 0 && <p className="subtitulo">Este tipo não tem equipamento para escolher.</p>}
               <div className="chips">
                 {EQUIPAMENTOS.map(nome => {
                   const ativo = pedido.equipamentos.includes(nome)
@@ -259,7 +250,7 @@ export default function NovaReserva() {
                       aria-pressed={ativo}
                       onClick={() => alternar(nome)}
                     >
-                      {nome}{ativo && ' ✓'}
+                      {maiuscula(nome)}
                     </button>
                   )
                 })}
@@ -276,10 +267,10 @@ export default function NovaReserva() {
               <div><dt>Quando</dt><dd>{quando}</dd></div>
               <div><dt>Duração</dt><dd>{duracaoEscolhida.nome}</dd></div>
               <div><dt>Horário</dt><dd>{periodoEscolhido.nome}</dd></div>
-              <div><dt>Edifício</dt><dd>{edificioEscolhido.nome}</dd></div>
+              <div><dt>Edifício</dt><dd>{edificioEscolhido?.nome ?? pedido.edificio}</dd></div>
               <div>
                 <dt>Equipamento</dt>
-                <dd>{pedido.equipamentos.length ? pedido.equipamentos.join(', ') : 'Nenhum'}</dd>
+                <dd>{pedido.equipamentos.length ? pedido.equipamentos.map(maiuscula).join(', ') : 'Nenhum'}</dd>
               </div>
             </dl>
             <button type="submit">Procurar melhores opções</button>

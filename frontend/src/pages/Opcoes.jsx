@@ -3,9 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { pedirOpcoes } from '../services/opcoesService'
 import { criarReserva } from '../services/reservasService'
 import { formatarIntervalo } from '../utils/datas'
-
-const PESOS =
-  'Pesos do score: preferência de local 30% · ajuste da capacidade 30% · ocupação do horário 20% · continuidade com reservas anteriores 20%'
+import { maiuscula } from '../utils/recursos'
 
 function resumirPedido(p) {
   const partes = [
@@ -33,7 +31,14 @@ export default function Opcoes() {
   const [erro, setErro] = useState('')
 
   useEffect(() => {
-    if (pedido) pedirOpcoes(pedido).then(setResultado)
+    if (pedido) {
+      pedirOpcoes(pedido)
+        .then(setResultado)
+        .catch(err => {
+          setErro(err.message)
+          setResultado({ opcoes: [], tempo_ms: 0, origem: null })
+        })
+    }
   }, [pedido])
 
   // quem abre /opcoes sem passar pelo formulário volta à Nova reserva
@@ -43,7 +48,7 @@ export default function Opcoes() {
     setAReservar(true)
     setErro('')
     try {
-      await criarReserva(opcao, pedido)
+      await criarReserva(opcao, pedido, resultado.origem ?? 'ia')
       navigate('/minhas-reservas')
     } catch (err) {
       setErro(err.message)
@@ -61,15 +66,20 @@ export default function Opcoes() {
       ) : (
         <>
           <p className="subtitulo">
-            {resumirPedido(pedido)} · {resultado.analisadas} combinações analisadas em{' '}
+            {resumirPedido(pedido)} · {resultado.opcoes.length} opções em{' '}
             {(resultado.tempo_ms / 1000).toFixed(1).replace('.', ',')} s
+            {resultado.origem === 'primeiro_livre' && ' · IA indisponível, a mostrar as primeiras livres'}
           </p>
 
           {erro && <p role="alert">{erro}</p>}
 
+          {!erro && resultado.opcoes.length === 0 && (
+            <p>Não há opções livres para este pedido. Experimente outras datas ou menos requisitos.</p>
+          )}
+
           {resultado.opcoes.map((o, i) => (
-            <article key={o.recurso_id} className={`card opcao ${i === 0 ? 'destaque' : ''}`}>
-              <div className={`score ${classeScore(o.score)}`}>{o.score}</div>
+            <article key={`${o.recurso_id}-${o.inicio}`} className={`card opcao ${i === 0 ? 'destaque' : ''}`}>
+              <div className={`score ${classeScore(o.score ?? 0)}`}>{o.score ?? '–'}</div>
 
               <div className="opcao-info">
                 <h2>
@@ -77,7 +87,9 @@ export default function Opcoes() {
                   {i === 0 && <span className="etiqueta">Melhor opção</span>}
                 </h2>
                 <p>
-                  {formatarIntervalo(o.inicio, o.fim)} · capacidade {o.capacidade} · {o.equipamentos.join(', ')}
+                  {formatarIntervalo(o.inicio, o.fim)}
+                  {o.capacidade != null && ` · capacidade ${o.capacidade}`}
+                  {o.equipamentos.length > 0 && ` · ${o.equipamentos.map(maiuscula).join(', ')}`}
                 </p>
                 <small>{o.motivos.join(' · ')}</small>
               </div>
@@ -85,8 +97,6 @@ export default function Opcoes() {
               <button disabled={aReservar} onClick={() => reservar(o)}>Reservar</button>
             </article>
           ))}
-
-          <p className="pesos">{PESOS}</p>
         </>
       )}
     </>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { criarUtilizador } from '../services/utilizadoresService'
+import { registar } from '../services/loginService'
 import { useAuth } from '../context/AuthContext.jsx'
 
 export default function Registo() {
@@ -27,7 +27,7 @@ export default function Registo() {
 
     setACriar(true)
     try {
-      const u = await criarUtilizador({
+      const u = await registar({
         nome: form.nome,
         email: form.email,
         password: form.password,

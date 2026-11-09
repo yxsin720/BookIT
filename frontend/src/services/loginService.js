@@ -1,22 +1,31 @@
-import { pedirUtilizadores } from './utilizadoresService'
-
-const esperar = ms => new Promise(resolve => setTimeout(resolve, ms))
+import { api } from './api'
 
 export async function entrar(email, password) {
-  await esperar(300)
-  const utilizadores = await pedirUtilizadores()
   const emailLimpo = email.trim().toLowerCase()
-  const utilizador = utilizadores.find(u => u.email === emailLimpo)
-  const passwordCerta = utilizador?.password ?? '1234'
-
-  if (!utilizador || password !== passwordCerta) {
-    throw new Error('Email ou palavra-passe incorretos.')
-  }
+  const resposta = await api('/login', {
+    metodo: 'POST',
+    corpo: { email: emailLimpo, password },
+  })
 
   return {
-    id: utilizador.id,
-    nome: utilizador.nome,
-    email: utilizador.email,
-    perfil: utilizador.perfil,
+    nome: resposta.nome,
+    email: emailLimpo,
+    perfil: resposta.perfil,
+    token: resposta.token,
+  }
+}
+
+export async function registar({ nome, email, password }) {
+  const emailLimpo = email.trim().toLowerCase()
+  const resposta = await api('/registo', {
+    metodo: 'POST',
+    corpo: { nome: nome.trim(), email: emailLimpo, password },
+  })
+
+  return {
+    nome: resposta.nome,
+    email: emailLimpo,
+    perfil: resposta.perfil,
+    token: resposta.token,
   }
 }

@@ -2,29 +2,9 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import { pedirRecursos, marcarIndisponivel } from '../services/recursosService'
+import { maiuscula, NOMES_TIPO, nomeEdificio } from '../utils/recursos'
 
-const NOMES_TIPO = {
-  sala: 'Sala de estudo',
-  laboratorio: 'Laboratório',
-  equipamento: 'Equipamento',
-  lugar: 'Lugar de estudo',
-}
-
-const FILTRO_TIPO = [
-  { valor: '', nome: 'Todos' },
-  { valor: 'sala', nome: 'Salas' },
-  { valor: 'laboratorio', nome: 'Laboratórios' },
-  { valor: 'equipamento', nome: 'Equipamento' },
-]
-
-const FILTRO_EDIFICIO = [
-  { valor: '', nome: 'Todos' },
-  { valor: 'A', nome: 'Edifício A' },
-  { valor: 'B', nome: 'Edifício B' },
-  { valor: 'Biblioteca', nome: 'Biblioteca' },
-]
-
-const nomeEdificio = e => (e === 'Biblioteca' ? 'Biblioteca' : `Edifício ${e}`)
+const unicos = lista => [...new Set(lista)].filter(Boolean).sort()
 
 // Uma fila de botões de filtro (só um fica escolhido)
 function Filtro({ rotulo, opcoes, valor, aoEscolher }) {
@@ -56,8 +36,15 @@ export default function Recursos() {
 
   const podeGerir = ['gestor', 'administrador'].includes(utilizador?.perfil)
 
+  const [erro, setErro] = useState('')
+
   useEffect(() => {
-    pedirRecursos().then(setRecursos)
+    pedirRecursos()
+      .then(setRecursos)
+      .catch(err => {
+        setErro(err.message)
+        setRecursos([])
+      })
   }, [])
 
   const mudar = (campo, valor) => setFiltros(f => ({ ...f, [campo]: valor }))
@@ -67,6 +54,16 @@ export default function Recursos() {
     await marcarIndisponivel(r.id)
     setRecursos(await pedirRecursos())
   }
+
+  // Os filtros só mostram tipos e edifícios que existem
+  const FILTRO_TIPO = [
+    { valor: '', nome: 'Todos' },
+    ...unicos((recursos ?? []).map(r => r.tipo)).map(t => ({ valor: t, nome: NOMES_TIPO[t] ?? maiuscula(t) })),
+  ]
+  const FILTRO_EDIFICIO = [
+    { valor: '', nome: 'Todos' },
+    ...unicos((recursos ?? []).map(r => r.edificio)).map(e => ({ valor: e, nome: nomeEdificio(e) })),
+  ]
 
   const visiveis = recursos
     ? recursos.filter(
@@ -91,6 +88,8 @@ export default function Recursos() {
         />
       </div>
 
+      {erro && <p role="alert">{erro}</p>}
+
       {visiveis === null ? (
         <p>A carregar recursos…</p>
       ) : visiveis.length === 0 ? (
@@ -101,13 +100,6 @@ export default function Recursos() {
             const disponivel = r.estado === 'disponivel'
             return (
               <article key={r.id} className={`espaco recurso ${disponivel ? '' : 'indisponivel'}`}>
-                <div
-                  className="espaco-foto"
-                  style={r.imagem ? { backgroundImage: `url(${r.imagem})` } : undefined}
-                >
-                  {!r.imagem && 'Foto'}
-                </div>
-
                 <div className="espaco-corpo">
                   <b>{r.nome}</b>
                   <span className="recurso-meta">
@@ -117,7 +109,7 @@ export default function Recursos() {
                   {r.equipamentos.length > 0 && (
                     <div className="etiquetas">
                       {r.equipamentos.map(e => (
-                        <i key={e}>{e}</i>
+                        <i key={e}>{maiuscula(e)}</i>
                       ))}
                     </div>
                   )}

@@ -31,14 +31,26 @@ export default function MinhasReservas() {
   const [aba, setAba] = useState('proximas')
   const [agora] = useState(() => Date.now())
 
+  const [erro, setErro] = useState('')
+
   useEffect(() => {
-    pedirReservas().then(setReservas)
+    pedirReservas()
+      .then(setReservas)
+      .catch(err => {
+        setErro(err.message)
+        setReservas([])
+      })
   }, [])
 
   const cancelar = async id => {
     if (!window.confirm('Cancelar esta reserva?')) return
-    await cancelarReserva(id)
-    setReservas(await pedirReservas())
+    setErro('')
+    try {
+      await cancelarReserva(id)
+      setReservas(await pedirReservas())
+    } catch (err) {
+      setErro(err.message)
+    }
   }
 
   let visiveis = []
@@ -58,6 +70,8 @@ export default function MinhasReservas() {
     <>
       <h1>As minhas reservas</h1>
       <p className="subtitulo">Veja as suas reservas e cancele, se precisar.</p>
+
+      {erro && <p role="alert">{erro}</p>}
 
       {reservas === null ? (
         <p>A carregar reservas…</p>
@@ -82,13 +96,6 @@ export default function MinhasReservas() {
           ) : (
             visiveis.map(r => (
               <article key={r.id} className={`card minha-reserva ${r.estado === 'cancelada' ? 'apagada' : ''}`}>
-                <div
-                  className="opcao-foto"
-                  style={r.imagem ? { backgroundImage: `url(${r.imagem})` } : undefined}
-                >
-                  {!r.imagem && 'Foto'}
-                </div>
-
                 <div className="minha-corpo">
                   <h2>
                     {r.nome}
