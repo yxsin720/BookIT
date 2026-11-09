@@ -91,10 +91,11 @@ CREATE TABLE reservas (
     estado        estado_reserva NOT NULL DEFAULT 'confirmada',
     origem        origem_reserva NOT NULL DEFAULT 'manual',
     criado_em     TIMESTAMPTZ    NOT NULL DEFAULT now(),
-    cancelado_em  TIMESTAMPTZ,
+        cancelado_em  TIMESTAMPTZ,
+    chave_idempotencia TEXT UNIQUE,
     CHECK (NOT isempty(periodo)),
     CHECK (NOT lower_inf(periodo) AND NOT upper_inf(periodo)),
-
+    
     -- Consistência: nunca há duas reservas confirmadas sobrepostas no mesmo recurso.
     -- É a base de dados que garante isto, mesmo com muitos pedidos em simultâneo.
     CONSTRAINT reservas_sem_sobreposicao
