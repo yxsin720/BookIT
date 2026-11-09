@@ -187,6 +187,19 @@ form button[aria-pressed='true'] {
 }
 .pesos { color: var(--texto-suave); font-size: 14px; margin-top: 20px; }
 
+/* Opções: foto da sala */
+.opcao-foto {
+  flex: 0 0 140px;
+  height: 100px;
+  border-radius: 12px;
+  background: #e5e7eb center / cover;
+  color: #6b7280;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Painel do gestor */
 .indicadores {
   display: grid;
@@ -195,7 +208,9 @@ form button[aria-pressed='true'] {
   margin-bottom: 8px;
 }
 .indicadores .card { margin: 0; }
-.indicadores strong { font-size: 34px; }
+.indicadores span { color: var(--texto-suave); font-size: 15px; }
+.indicadores strong { display: block; margin-top: 2px; font-size: 34px; }
+.indicadores .alerta strong { color: var(--vermelho-escuro); }
 
 /* Tabela (Utilizadores) */
 table {
@@ -527,3 +542,171 @@ tbody tr:last-child td { border-bottom: 0; }
   .home-cta { margin: 56px 16px 0; padding: 36px 24px; }
   .home-rodape { padding: 24px 16px 32px; }
 }
+
+/* ---------- Nova reserva ---------- */
+form.reserva {
+  display: block;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+.reserva-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 28px;
+  align-items: start;
+  font-size: 16px;
+  font-weight: 400;
+}
+.reserva-blocos { display: grid; gap: 20px; }
+.reserva-bloco {
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-radius: var(--raio);
+  padding: 24px;
+  box-shadow: var(--sombra);
+}
+.reserva-bloco h2 { display: flex; align-items: center; gap: 12px; margin: 0 0 18px; font-size: 18px; }
+.reserva-bloco h2 span {
+  flex: 0 0 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--vermelho-claro);
+  color: var(--vermelho-escuro);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.campo { margin-top: 22px; }
+.campo-rotulo { display: block; margin-bottom: 8px; font-weight: 700; font-size: 14px; }
+.datas { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* Botões que o formulário global pinta de verde: voltam ao estilo da Home */
+.reserva .chip {
+  padding: 8px 16px;
+  border-radius: 99px;
+  font-size: 14px;
+  background: #fff;
+  color: var(--texto);
+  border: 1px solid #d1d5db;
+}
+.reserva .chip.ativo {
+  background: var(--vermelho-escuro);
+  border-color: var(--vermelho-escuro);
+  color: #fff;
+}
+
+/* Cartões do tipo de recurso (com espaço para foto) */
+.tipos { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+.reserva .tipo-card {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  text-align: left;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--texto);
+  border: 2px solid var(--borda);
+  box-shadow: none;
+  font-size: 14px;
+  font-weight: 400;
+}
+.reserva .tipo-card:hover { transform: none; box-shadow: none; border-color: #9ca3af; }
+.reserva .tipo-card.ativo { border-color: var(--vermelho-escuro); background: #fdf2f1; }
+.tipo-foto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 96px;
+  background: #e5e7eb center / cover;
+  color: #6b7280;
+  font-size: 12px;
+}
+.tipo-nome { display: block; padding: 10px 12px 0; font-weight: 700; font-size: 15px; }
+.tipo-texto { display: block; padding: 2px 12px 12px; color: var(--texto-suave); font-size: 13px; }
+
+/* Resumo ao lado */
+.reserva-resumo {
+  position: sticky;
+  top: 84px;
+  background: #fff;
+  border: 1px solid var(--borda);
+  border-top: 5px solid var(--vermelho);
+  border-radius: var(--raio);
+  padding: 22px;
+  box-shadow: var(--sombra-forte);
+}
+.reserva-resumo h2 { margin: 0 0 14px; font-size: 18px; }
+.resumo-lista { display: grid; gap: 10px; margin: 0 0 18px; font-size: 15px; }
+.resumo-lista div { display: flex; justify-content: space-between; gap: 12px; }
+.resumo-lista dt { color: var(--texto-suave); }
+.resumo-lista dd { margin: 0; font-weight: 700; text-align: right; }
+.reserva-resumo button { width: 100%; }
+.reserva-resumo button + button { margin-top: 10px; }
+
+@media (max-width: 900px) {
+  .reserva-grid { grid-template-columns: 1fr; }
+  .reserva-resumo { position: static; }
+  .datas { grid-template-columns: 1fr; }
+}
+
+/* ---------- As minhas reservas ---------- */
+.minha-reserva { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.minha-reserva.apagada { opacity: 0.7; }
+.minha-corpo { flex: 1; min-width: 240px; }
+.minha-corpo h2 { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.minha-corpo .estado { font-size: 13px; }
+.estado.confirmada { background: #dcfce7; color: #14532d; }
+.estado.cancelada { background: #f3f4f6; color: #374151; }
+.estado.reatribuida { background: #fef3c7; color: #78350f; }
+.aviso-reatribuida {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fef3c7;
+  color: #78350f;
+  font-size: 14px;
+}
+
+/* ---------- Recursos ---------- */
+.filtros { display: flex; flex-wrap: wrap; gap: 20px 32px; margin-bottom: 24px; }
+.recursos-grelha { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.recurso { display: flex; flex-direction: column; box-shadow: var(--sombra); }
+.recurso.indisponivel { opacity: 0.75; }
+.recurso .espaco-corpo { flex: 1; }
+.recurso-meta { display: block; margin-top: 2px; }
+.recurso-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 0 16px 16px;
+}
+.recurso .estado { font-size: 13px; }
+.recurso-rodape button { padding: 8px 16px; font-size: 14px; }
+
+/* ---------- Painel do gestor ---------- */
+.painel-linha { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; padding: 14px 20px; margin-bottom: 12px; }
+.mini-foto {
+  flex: 0 0 72px;
+  height: 50px;
+  border-radius: 8px;
+  background: #e5e7eb center / cover;
+  color: #6b7280;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.painel-nome { flex: 1; min-width: 180px; }
+.painel-nome b { display: block; font-size: 17px; }
+.painel-nome small { color: var(--texto-suave); }
+.painel-linha .estado { font-size: 13px; }
+.painel-linha button { padding: 8px 16px; font-size: 14px; }
+.hist-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 14px 20px; margin-bottom: 12px; }
+.hist-item small { display: block; margin-top: 2px; color: var(--texto-suave); }
+.hist-item .estado { font-size: 13px; }
