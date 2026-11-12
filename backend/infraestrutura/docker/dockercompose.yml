@@ -4,15 +4,59 @@ services:
     image: postgres:16-alpine
     container_name: bookit-db
     restart: unless-stopped
+    # Primário: escreve WAL suficiente para alimentar a réplica.
+    command:
+      - postgres
+      - -c
+      - hba_file=/etc/bookit/pg_hba.conf
+      - -c
+      - wal_level=replica
+      - -c
+      - max_wal_senders=10
+      - -c
+      - wal_keep_size=256MB
+      - -c
+      - hot_standby=on
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      REPLICADOR_PASSWORD: ${REPLICADOR_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
       - bookit-db-data:/var/lib/postgresql/data
       - ../../db/BookIT.sql:/docker-entrypoint-initdb.d/01-bookit.sql:ro
+      - ./db/00-replicacao.sh:/docker-entrypoint-initdb.d/00-replicacao.sh:ro
+      - ./db/pg_hba.conf:/etc/bookit/pg_hba.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Réplica em hot standby: copia o primário e segue o WAL em tempo real.
+  # Só aceita leituras enquanto o primário estiver vivo.
+  db-replica:
+    image: postgres:16-alpine
+    container_name: bookit-db-replica
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "/opt/bookit/replica-entrypoint.sh"]
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data
+      PRIMARY_HOST: db
+      REPLICADOR_USER: replicador
+      REPLICADOR_PASSWORD: ${REPLICADOR_PASSWORD}
+      PGPASSWORD: ${REPLICADOR_PASSWORD}
+    volumes:
+      - bookit-db-replica-data:/var/lib/postgresql/data
+      - ./db/replica-entrypoint.sh:/opt/bookit/replica-entrypoint.sh:ro
+    depends_on:
+      db:
+        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -69,4 +113,5 @@ services:
 
 volumes:
   bookit-db-data:
+  bookit-db-replica-data:
   bookit-redis-data:
