@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout.jsx'
 import RotaProtegida from './components/RotaProtegida.jsx'
+import RotaPublica from './components/RotaPublica.jsx'
 import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
 import Registo from './pages/Registo.jsx'
@@ -16,8 +17,11 @@ export default function App() {
   return (
     <Routes>
       <Route index element={<Home />} />
-      <Route path="login" element={<Login />} />
-      <Route path="registo" element={<Registo />} />
+
+      <Route element={<RotaPublica />}>
+        <Route path="login" element={<Login />} />
+        <Route path="registo" element={<Registo />} />
+      </Route>
 
       <Route element={<Layout />}>
         <Route element={<RotaProtegida />}>

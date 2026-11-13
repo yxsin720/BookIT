@@ -1,30 +1,29 @@
-import { reservasFalsas } from '../data/reservasFalsas'
+import { api } from './api'
 
-let reservas = [...reservasFalsas]
-
-const esperar = ms => new Promise(resolve => setTimeout(resolve, ms))
+// A API devolve "recurso_nome"; as páginas usam "nome"
+const paraEcra = r => ({ ...r, nome: r.recurso_nome })
 
 export async function pedirReservas() {
-  await esperar(300)
-  return reservas
+  const reservas = await api('/reservas/minhas')
+  return reservas.map(paraEcra)
 }
 
-export async function criarReserva(opcao, pedido) {
-  await esperar(300)
-  const nova = {
-    id: Date.now(),
-    recurso_id: opcao.recurso_id,
-    nome: opcao.nome,
-    inicio: opcao.inicio,
-    fim: opcao.fim,
-    n_pessoas: pedido.n_pessoas,
-    estado: 'confirmada',
-  }
-  reservas = [...reservas, nova]
-  return nova
+export async function criarReserva(opcao, pedido, origem = 'ia') {
+  const reserva = await api('/reservas', {
+    metodo: 'POST',
+    // A chave de idempotência evita reservas duplicadas se o pedido for repetido
+    cabecalhos: { 'Idempotency-Key': crypto.randomUUID() },
+    corpo: {
+      recurso_id: opcao.recurso_id,
+      inicio: opcao.inicio,
+      fim: opcao.fim,
+      n_pessoas: pedido.n_pessoas,
+      origem,
+    },
+  })
+  return paraEcra(reserva)
 }
 
 export async function cancelarReserva(id) {
-  await esperar(300)
-  reservas = reservas.map(r => (r.id === id ? { ...r, estado: 'cancelada' } : r))
+  return paraEcra(await api(`/reservas/${id}`, { metodo: 'DELETE' }))
 }

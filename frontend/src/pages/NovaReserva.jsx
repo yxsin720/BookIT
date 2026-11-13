@@ -1,10 +1,21 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { pedirRecursos } from '../services/recursosService'
+import { maiuscula, NOMES_TIPO, nomeEdificio } from '../utils/recursos'
 
-const EQUIPAMENTOS = ['Projetor', 'Quadro', 'Videoconferência', 'Tomadas extra']
+const DURACOES = [
+  { valor: 60, nome: '1 hora' },
+  { valor: 120, nome: '2 horas' },
+  { valor: 180, nome: '3 horas' },
+]
+
+const PERIODOS = [
+  { valor: 'manha', nome: 'Manhã (8h–12h)' },
+  { valor: 'tarde', nome: 'Tarde (14h–18h)' },
+  { valor: 'qualquer', nome: 'Qualquer' },
+]
 
 const PEDIDO_INICIAL = {
-  tipo: 'sala',
   n_pessoas: 6,
   duracao_min: 120,
   data_inicio: '',
@@ -14,9 +25,59 @@ const PEDIDO_INICIAL = {
   equipamentos: [],
 }
 
+// ---- datas (formato AAAA-MM-DD, como o input type="date" usa) ----
+const dois = n => String(n).padStart(2, '0')
+const formatar = d => `${d.getFullYear()}-${dois(d.getMonth() + 1)}-${dois(d.getDate())}`
+const somarDias = (d, dias) => {
+  const nova = new Date(d)
+  nova.setDate(nova.getDate() + dias)
+  return nova
+}
+const curto = iso => `${iso.slice(8, 10)}/${iso.slice(5, 7)}`
+
+// Fila de botões onde só um fica escolhido
+function Chips({ opcoes, valor, aoEscolher }) {
+  return (
+    <div className="chips">
+      {opcoes.map(o => (
+        <button
+          type="button"
+          key={o.valor}
+          className={valor === o.valor ? 'chip ativo' : 'chip'}
+          aria-pressed={valor === o.valor}
+          onClick={() => aoEscolher(o.valor)}
+        >
+          {o.nome}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 export default function NovaReserva() {
   const navigate = useNavigate()
-  const [pedido, setPedido] = useState(PEDIDO_INICIAL)
+  const { state } = useLocation()
+  // "Reservar" na página Recursos já traz o tipo escolhido
+  const [pedido, setPedido] = useState(() => ({ ...PEDIDO_INICIAL, tipo: state?.tipo ?? 'sala' }))
+  const [recursos, setRecursos] = useState([])
+
+  // As opções do formulário vêm dos recursos que existem mesmo na base de dados
+  useEffect(() => {
+    pedirRecursos().then(setRecursos).catch(() => setRecursos([]))
+  }, [])
+
+  const ativos = recursos.filter(r => r.ativo)
+  const unicos = lista => [...new Set(lista)].sort()
+  const TIPOS = unicos([...ativos.map(r => r.tipo), pedido.tipo]).map(t => ({
+    valor: t,
+    nome: NOMES_TIPO[t] ?? maiuscula(t),
+  }))
+  const doTipo = ativos.filter(r => r.tipo === pedido.tipo)
+  const EQUIPAMENTOS = unicos(doTipo.flatMap(r => r.equipamentos))
+  const EDIFICIOS = [
+    { valor: '', nome: 'Sem preferência' },
+    ...unicos(doTipo.map(r => r.edificio).filter(Boolean)).map(e => ({ valor: e, nome: nomeEdificio(e) })),
+  ]
 
   const mudar = (campo, valor) => setPedido(p => ({ ...p, [campo]: valor }))
 
@@ -28,108 +89,193 @@ export default function NovaReserva() {
     mudar('equipamentos', novaLista)
   }
 
-  const limpar = () => setPedido(PEDIDO_INICIAL)
+  const limpar = () => setPedido({ ...PEDIDO_INICIAL, tipo: 'sala' })
 
   const procurar = e => {
     e.preventDefault()
     navigate('/opcoes', { state: { pedido } })
   }
 
+  // atalhos de data
+  const hoje = new Date()
+  const hojeTexto = formatar(hoje)
+  const ATALHOS = [
+    { nome: 'Hoje', inicio: hojeTexto, fim: hojeTexto },
+    { nome: 'Amanhã', inicio: formatar(somarDias(hoje, 1)), fim: formatar(somarDias(hoje, 1)) },
+    { nome: 'Próximos 7 dias', inicio: hojeTexto, fim: formatar(somarDias(hoje, 7)) },
+  ]
+
+  // texto do resumo
+  let quando = 'Escolha a data'
+  if (pedido.data_inicio) {
+    quando =
+      pedido.data_fim && pedido.data_fim !== pedido.data_inicio
+        ? `${curto(pedido.data_inicio)} a ${curto(pedido.data_fim)}`
+        : curto(pedido.data_inicio)
+  }
+  const tipoEscolhido = TIPOS.find(t => t.valor === pedido.tipo) ?? { nome: pedido.tipo }
+  const periodoEscolhido = PERIODOS.find(p => p.valor === pedido.periodo)
+  const edificioEscolhido = EDIFICIOS.find(e => e.valor === pedido.edificio)
+  const duracaoEscolhida = DURACOES.find(d => d.valor === pedido.duracao_min)
+
   return (
     <>
       <h1>Nova reserva</h1>
       <p className="subtitulo">Diga-nos o que precisa e o BookIT sugere as melhores opções.</p>
 
-      <form onSubmit={procurar}>
-        <label>
-          Tipo de recurso
-          <select value={pedido.tipo} onChange={e => mudar('tipo', e.target.value)}>
-            <option value="sala">Sala de estudo</option>
-            <option value="laboratorio">Laboratório</option>
-            <option value="equipamento">Equipamento</option>
-            <option value="lugar">Lugar de estudo</option>
-          </select>
-        </label>
+      <form className="reserva" onSubmit={procurar}>
+        <div className="reserva-grid">
+          <section className="reserva-blocos">
+            {/* 1. O que reservar */}
+            <section className="reserva-bloco">
+              <h2><span>1</span> O que quer reservar?</h2>
 
-        <label>
-          N.º de pessoas
-          <input
-            type="number"
-            min="1"
-            value={pedido.n_pessoas}
-            onChange={e => mudar('n_pessoas', Number(e.target.value))}
-          />
-        </label>
+              <Chips
+                opcoes={TIPOS}
+                valor={pedido.tipo}
+                // ao mudar de tipo, o equipamento e o edifício escolhidos podem já não existir
+                aoEscolher={v => setPedido(p => ({ ...p, tipo: v, equipamentos: [], edificio: '' }))}
+              />
 
-        <label>
-          Duração
-          <select value={pedido.duracao_min} onChange={e => mudar('duracao_min', Number(e.target.value))}>
-            <option value={60}>1 hora</option>
-            <option value={120}>2 horas</option>
-            <option value={180}>3 horas</option>
-          </select>
-        </label>
+              <div className="campo">
+                <span className="campo-rotulo">Quantas pessoas?</span>
+                <div className="contador">
+                  <button
+                    type="button"
+                    className="contador-btn"
+                    aria-label="Menos uma pessoa"
+                    onClick={() => mudar('n_pessoas', Math.max(1, pedido.n_pessoas - 1))}
+                  >
+                    −
+                  </button>
+                  <strong>{pedido.n_pessoas}</strong>
+                  <button
+                    type="button"
+                    className="contador-btn"
+                    aria-label="Mais uma pessoa"
+                    onClick={() => mudar('n_pessoas', Math.min(30, pedido.n_pessoas + 1))}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </section>
 
-        <label>
-          Data inicial
-          <input
-            type="date"
-            value={pedido.data_inicio}
-            onChange={e => mudar('data_inicio', e.target.value)}
-          />
-        </label>
+            {/* 2. Para quando */}
+            <section className="reserva-bloco">
+              <h2><span>2</span> Para quando?</h2>
 
-        <label>
-          Data final (janela de pesquisa)
-          <input
-            type="date"
-            min={pedido.data_inicio}
-            value={pedido.data_fim}
-            onChange={e => mudar('data_fim', e.target.value)}
-          />
-        </label>
+              <div className="campo">
+                <span className="campo-rotulo">Atalhos</span>
+                <div className="chips">
+                  {ATALHOS.map(a => {
+                    const ativo = pedido.data_inicio === a.inicio && pedido.data_fim === a.fim
+                    return (
+                      <button
+                        type="button"
+                        key={a.nome}
+                        className={ativo ? 'chip ativo' : 'chip'}
+                        aria-pressed={ativo}
+                        onClick={() => setPedido(p => ({ ...p, data_inicio: a.inicio, data_fim: a.fim }))}
+                      >
+                        {a.nome}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
 
-        <label>
-          Horário preferido
-          <select value={pedido.periodo} onChange={e => mudar('periodo', e.target.value)}>
-            <option value="manha">Manhã (8h–12h)</option>
-            <option value="tarde">Tarde (14h–18h)</option>
-            <option value="qualquer">Qualquer</option>
-          </select>
-        </label>
+              <div className="campo datas">
+                <label>
+                  Data inicial
+                  <input
+                    type="date"
+                    required
+                    min={hojeTexto}
+                    value={pedido.data_inicio}
+                    onChange={e => mudar('data_inicio', e.target.value)}
+                  />
+                </label>
+                <label>
+                  Data final (janela de pesquisa)
+                  <input
+                    type="date"
+                    min={pedido.data_inicio || hojeTexto}
+                    value={pedido.data_fim}
+                    onChange={e => mudar('data_fim', e.target.value)}
+                  />
+                </label>
+              </div>
 
-        <div>
-          Equipamento necessário
-          <div>
-            {EQUIPAMENTOS.map(nome => {
-              const ativo = pedido.equipamentos.includes(nome)
-              return (
-                <button
-                  type="button"
-                  key={nome}
-                  aria-pressed={ativo}
-                  onClick={() => alternar(nome)}
-                >
-                  {nome}{ativo && ' ✓'}
-                </button>
-              )
-            })}
-          </div>
-        </div>
+              <div className="campo">
+                <span className="campo-rotulo">Duração</span>
+                <Chips
+                  opcoes={DURACOES}
+                  valor={pedido.duracao_min}
+                  aoEscolher={v => mudar('duracao_min', v)}
+                />
+              </div>
 
-        <label>
-          Edifício preferido (opcional)
-          <select value={pedido.edificio} onChange={e => mudar('edificio', e.target.value)}>
-            <option value="">Sem preferência</option>
-            <option value="A">Edifício A</option>
-            <option value="B">Edifício B</option>
-            <option value="Biblioteca">Biblioteca</option>
-          </select>
-        </label>
+              <div className="campo">
+                <span className="campo-rotulo">Horário preferido</span>
+                <Chips
+                  opcoes={PERIODOS}
+                  valor={pedido.periodo}
+                  aoEscolher={v => mudar('periodo', v)}
+                />
+              </div>
 
-        <div className="acoes">
-          <button type="submit">Procurar melhores opções</button>
-          <button type="button" className="secundario" onClick={limpar}>Limpar</button>
+              <div className="campo">
+                <span className="campo-rotulo">Edifício preferido (opcional)</span>
+                <Chips
+                  opcoes={EDIFICIOS}
+                  valor={pedido.edificio}
+                  aoEscolher={v => mudar('edificio', v)}
+                />
+              </div>
+            </section>
+
+            {/* 3. Equipamento */}
+            <section className="reserva-bloco">
+              <h2><span>3</span> Precisa de equipamento?</h2>
+              {EQUIPAMENTOS.length === 0 && <p className="subtitulo">Este tipo não tem equipamento para escolher.</p>}
+              <div className="chips">
+                {EQUIPAMENTOS.map(nome => {
+                  const ativo = pedido.equipamentos.includes(nome)
+                  return (
+                    <button
+                      type="button"
+                      key={nome}
+                      className={ativo ? 'chip ativo' : 'chip'}
+                      aria-pressed={ativo}
+                      onClick={() => alternar(nome)}
+                    >
+                      {maiuscula(nome)}
+                    </button>
+                  )
+                })}
+              </div>
+            </section>
+          </section>
+
+          {/* Resumo ao lado */}
+          <aside className="reserva-resumo">
+            <h2>O seu pedido</h2>
+            <dl className="resumo-lista">
+              <div><dt>Tipo</dt><dd>{tipoEscolhido.nome}</dd></div>
+              <div><dt>Pessoas</dt><dd>{pedido.n_pessoas}</dd></div>
+              <div><dt>Quando</dt><dd>{quando}</dd></div>
+              <div><dt>Duração</dt><dd>{duracaoEscolhida.nome}</dd></div>
+              <div><dt>Horário</dt><dd>{periodoEscolhido.nome}</dd></div>
+              <div><dt>Edifício</dt><dd>{edificioEscolhido?.nome ?? pedido.edificio}</dd></div>
+              <div>
+                <dt>Equipamento</dt>
+                <dd>{pedido.equipamentos.length ? pedido.equipamentos.map(maiuscula).join(', ') : 'Nenhum'}</dd>
+              </div>
+            </dl>
+            <button type="submit">Procurar melhores opções</button>
+            <button type="button" className="secundario" onClick={limpar}>Limpar</button>
+          </aside>
         </div>
       </form>
     </>

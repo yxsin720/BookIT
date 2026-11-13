@@ -3,6 +3,8 @@ import { pedirPainel } from '../services/painelService'
 import { pedirRecursos, marcarIndisponivel } from '../services/recursosService'
 import { formatarData, formatarHora } from '../utils/datas'
 
+const nomeEdificio = e => (e === 'Biblioteca' ? 'Biblioteca' : `Edifício ${e}`)
+
 export default function PainelGestor() {
   const [painel, setPainel] = useState(null)
   const [recursos, setRecursos] = useState(null)
@@ -12,61 +14,85 @@ export default function PainelGestor() {
     pedirRecursos().then(setRecursos)
   }, [])
 
-  const marcar = async id => {
-    if (!window.confirm('Marcar este recurso como indisponível?')) return
-    await marcarIndisponivel(id)
+  const marcar = async r => {
+    if (!window.confirm(`Marcar ${r.nome} como indisponível?`)) return
+    await marcarIndisponivel(r.id)
     setRecursos(await pedirRecursos())
   }
 
   return (
     <>
       <h1>Painel do gestor</h1>
+      <p className="subtitulo">Estado dos recursos e das reservas, num só sítio.</p>
 
-      {painel === null || recursos === null
-        ? <p>A carregar painel…</p>
-        : (
-          <>
-            <div className="indicadores">
-              <div className="card">
-                <p><strong>{painel.indicadores.reservas_ativas}</strong></p>
-                <p>Reservas ativas</p>
-              </div>
-              <div className="card">
-                <p><strong>{painel.indicadores.ocupacao_pct}%</strong></p>
-                <p>Ocupação</p>
-              </div>
-              <div className="card">
-                <p><strong>{recursos.filter(r => r.estado === 'indisponivel').length}</strong></p>
-                <p>Recursos indisponíveis</p>
-              </div>
+      {painel === null || recursos === null ? (
+        <p>A carregar painel…</p>
+      ) : (
+        <>
+          {/* Números principais */}
+          <div className="indicadores">
+            <div className="card">
+              <span>Ocupação</span>
+              <strong>{painel.indicadores.ocupacao_pct}%</strong>
             </div>
+            <div className="card">
+              <span>Reservas ativas</span>
+              <strong>{painel.indicadores.reservas_ativas}</strong>
+            </div>
+            <div className={`card ${recursos.some(r => r.estado === 'indisponivel') ? 'alerta' : ''}`}>
+              <span>Recursos indisponíveis</span>
+              <strong>{recursos.filter(r => r.estado === 'indisponivel').length}</strong>
+            </div>
+          </div>
 
-            <h2>Recursos</h2>
+          {/* Recursos (os indisponíveis aparecem primeiro) */}
+          <h2>Recursos</h2>
 
-            {recursos.map(r => (
-              <div key={r.id} className="card">
-                <h3>{r.nome}</h3>
-                <p>{r.estado === 'disponivel' ? 'Disponível' : 'Indisponível'}</p>
-                {r.estado === 'disponivel' && (
-                  <button type="button" onClick={() => marcar(r.id)}>Marcar indisponível</button>
-                )}
-              </div>
-            ))}
+          {[...recursos]
+            .sort((a, b) => (a.estado === 'indisponivel' ? 0 : 1) - (b.estado === 'indisponivel' ? 0 : 1))
+            .map(r => {
+              const disponivel = r.estado === 'disponivel'
+              return (
+                <div key={r.id} className="card painel-linha">
 
-            <h2>Reservas reatribuídas</h2>
-
-            {painel.reatribuicoes.length === 0
-              ? <p>Ainda não houve reatribuições.</p>
-              : painel.reatribuicoes.map(r => (
-                  <div key={r.id} className="card">
-                    <h3>{r.utilizador}</h3>
-                    <p>{r.de} → {r.para}</p>
-                    <p>{formatarData(r.inicio)}, das {formatarHora(r.inicio)} às {formatarHora(r.fim)}</p>
-                    <p>Motivo: {r.motivo}</p>
+                  <div className="painel-nome">
+                    <b>{r.nome}</b>
+                    <small>{nomeEdificio(r.edificio)}</small>
                   </div>
-                ))}
-          </>
-        )}
+
+                  <span className={`estado ${disponivel ? 'ativo' : 'em-baixo'}`}>
+                    {disponivel ? 'Disponível' : 'Indisponível'}
+                  </span>
+
+                  {disponivel && (
+                    <button type="button" className="secundario" onClick={() => marcar(r)}>
+                      Marcar indisponível
+                    </button>
+                  )}
+                </div>
+              )
+            })}
+
+          {/* Reservas que mudaram de sala */}
+          <h2>Reatribuídas recentemente</h2>
+
+          {painel.reatribuicoes.length === 0 ? (
+            <p>Ainda não houve reatribuições.</p>
+          ) : (
+            painel.reatribuicoes.map(r => (
+              <div key={r.id} className="card hist-item">
+                <div>
+                  <b>{r.utilizador}</b> · {r.de} → {r.para}
+                  <small>
+                    {formatarData(r.inicio)}, das {formatarHora(r.inicio)} às {formatarHora(r.fim)}
+                  </small>
+                </div>
+                <span className="estado reatribuida">{r.motivo}</span>
+              </div>
+            ))
+          )}
+        </>
+      )}
     </>
   )
 }

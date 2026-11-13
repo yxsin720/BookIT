@@ -25,6 +25,7 @@ class Recurso(BaseModel):
     abertura: str = "08:00"
     fecho: str = "22:00"
     ativo: bool = True
+    dias: list[int] = [0, 1, 2, 3, 4, 5, 6]  # dias em que abre (0 = domingo)
 
 
 class Reserva(BaseModel):
@@ -46,6 +47,7 @@ class Pedido(BaseModel):
     edificio: str = ""
     equipamentos: list[str] = []
     n_sessoes: int = 1
+    nao_antes: str = ""  # ex.: "2026-11-09T16:07"; não sugerir horas antes disto
 
 
 class PedidoRecomendacao(BaseModel):
