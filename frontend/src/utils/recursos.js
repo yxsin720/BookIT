@@ -8,4 +8,5 @@ export const NOMES_TIPO = {
 
 export const maiuscula = texto => (texto ? texto[0].toUpperCase() + texto.slice(1) : texto)
 
-export const nomeEdificio = e => (e === 'Biblioteca' ? 'Biblioteca' : `Edifício ${e}`)
+// Biblioteca e Receção não são "Edifício X"
+export const nomeEdificio = e => (['Biblioteca', 'Receção'].includes(e) ? e : `Edifício ${e}`)

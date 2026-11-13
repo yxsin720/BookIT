@@ -15,6 +15,9 @@ const PERIODOS = [
   { valor: 'qualquer', nome: 'Qualquer' },
 ]
 
+// MUDOU 1: tipos que não aparecem aqui (continuam na página Recursos)
+const TIPOS_OCULTOS = ['equipamento']
+
 const PEDIDO_INICIAL = {
   n_pessoas: 6,
   duracao_min: 120,
@@ -58,7 +61,9 @@ export default function NovaReserva() {
   const navigate = useNavigate()
   const { state } = useLocation()
   // "Reservar" na página Recursos já traz o tipo escolhido
-  const [pedido, setPedido] = useState(() => ({ ...PEDIDO_INICIAL, tipo: state?.tipo ?? 'sala' }))
+  // MUDOU 2: se vier um tipo escondido (equipamento), começa em "sala"
+  const tipoInicial = TIPOS_OCULTOS.includes(state?.tipo) ? 'sala' : (state?.tipo ?? 'sala')
+  const [pedido, setPedido] = useState(() => ({ ...PEDIDO_INICIAL, tipo: tipoInicial }))
   const [recursos, setRecursos] = useState([])
 
   // As opções do formulário vêm dos recursos que existem mesmo na base de dados
@@ -68,7 +73,11 @@ export default function NovaReserva() {
 
   const ativos = recursos.filter(r => r.ativo)
   const unicos = lista => [...new Set(lista)].sort()
-  const TIPOS = unicos([...ativos.map(r => r.tipo), pedido.tipo]).map(t => ({
+  // MUDOU 3: não mostra os tipos escondidos
+  const TIPOS = unicos([
+    ...ativos.map(r => r.tipo).filter(t => !TIPOS_OCULTOS.includes(t)),
+    pedido.tipo,
+  ]).map(t => ({
     valor: t,
     nome: NOMES_TIPO[t] ?? maiuscula(t),
   }))

@@ -127,12 +127,17 @@ export default function Recursos() {
                           Marcar indisponível
                         </button>
                       )}
-                      <button
-                        type="button"
-                        onClick={() => navigate('/nova-reserva', { state: { tipo: r.tipo } })}
-                      >
-                        Reservar
-                      </button>
+                      {/* MUDOU: o material não se reserva aqui por enquanto */}
+                      {r.tipo === 'equipamento' ? (
+                        <span className="recurso-meta">Reserva de material em breve</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => navigate('/nova-reserva', { state: { tipo: r.tipo } })}
+                        >
+                          Reservar
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
