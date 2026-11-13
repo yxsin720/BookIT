@@ -26,7 +26,8 @@ serviço, mais o Redis:
 |---------|------------------|-----------------------|-------------------------|
 | nginx   | nginx:alpine     | reverse proxy         | balanceador             |
 | api     | build do backend | 1 instância           | 2+ instâncias stateless |
-| db      | postgres:16      | 1 primário            | primário + réplica      |
+| db      | postgres:16      | primário (escrita)    | primário + réplica      |
+| db-replica | postgres:16   | réplica hot standby   | 1 réplica               |
 | redis   | redis:7          | cache / estado volátil| —                       |
 | ia      | —                | ainda não existe      | 2 instâncias stateless  |
 
@@ -39,11 +40,32 @@ serviço, mais o Redis:
 |---------|------|-----------|
 | nginx   | 8080 | 80        |
 | db      | 5432 | 5432      |
+| db-replica | —  | 5432 (só interno, via `expose`) |
 | redis   | 6379 | 6379      |
 | api     | —    | 8000 (só interno, via `expose`) |
 
 A porta 80 do host costuma estar ocupada (ex.: MAMP/Apache), por isso o nginx
 publica na 8080. Acede-se em `http://localhost:8080`.
+
+## Réplica da base de dados e failover
+
+O `db` é o primário: aceita leituras e escritas. O `db-replica` clona-o no
+primeiro arranque (`pg_basebackup`) e depois segue o WAL em streaming, em hot
+standby — só aceita leituras.
+
+O primário precisa de um utilizador de replicação, criado no primeiro arranque
+de `db/00-replicacao.sh` com a password `REPLICADOR_PASSWORD` (ver `.env`).
+
+Se o primário cair, promove-se a réplica a primária:
+
+```powershell
+cd backend/infraestrutura/docker
+.\promover-replica.ps1
+```
+
+Depois de promover, a API tem de passar a apontar para `db-replica`. Para voltar
+ao estado inicial (primário + réplica a replicar), recria-se o volume:
+`docker compose -f dockercompose.yml down -v` seguido de `up -d`.
 
 ## Como correr
 
