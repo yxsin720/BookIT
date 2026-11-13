@@ -1,4 +1,4 @@
-"""Cria dados de teste na base de dados: utilizadores, salas e horários.
+"""Cria dados de teste na base de dados: utilizadores, salas, material e horários.
 Correr uma vez: python -m app.criar_dados"""
 from sqlalchemy import text
 
@@ -18,6 +18,9 @@ SALAS = [
     ("Sala 2.05", "B", 6, ["quadro"], "09:00", "18:00"),
     ("Sala 0.10", "Biblioteca", 10, ["projetor", "videoconferência"], "08:00", "22:00"),
 ]
+
+# Material que os professores requisitam
+MATERIAL = ["Cabo HDMI 1", "Cabo HDMI 2", "Projetor portátil", "Portátil de empréstimo"]
 
 
 def main():
@@ -52,6 +55,21 @@ def main():
                     VALUES (:rid, :dia, :abre, :fecha)
                     ON CONFLICT (recurso_id, dia_semana) DO NOTHING
                 """), {"rid": recurso_id, "dia": dia, "abre": abertura, "fecha": fecho})
+
+        for nome in MATERIAL:
+            recurso_id = bd.execute(text("""
+                INSERT INTO recursos (tipo_id, nome, localizacao, capacidade)
+                VALUES ((SELECT id FROM tipos_recurso WHERE nome = 'equipamento'),
+                        :nome, 'Receção', 1)
+                ON CONFLICT (nome) DO UPDATE SET nome = EXCLUDED.nome
+                RETURNING id
+            """), {"nome": nome}).scalar()
+            for dia in range(1, 6):
+                bd.execute(text("""
+                    INSERT INTO horario_funcionamento (recurso_id, dia_semana, abertura, fecho)
+                    VALUES (:rid, :dia, '08:00', '20:00')
+                    ON CONFLICT (recurso_id, dia_semana) DO NOTHING
+                """), {"rid": recurso_id, "dia": dia})
 
     print("Dados de teste criados. Password de todos: bookit123")
 

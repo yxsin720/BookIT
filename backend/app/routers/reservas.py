@@ -9,10 +9,12 @@ from app.services.sessao import utilizador_atual
 router = APIRouter(prefix="/api", tags=["reservas"])
 
 SELECT_RESERVA = """
-    SELECT r.id, r.recurso_id, s.nome AS recurso_nome, r.n_pessoas, r.estado,
+    SELECT r.id, r.recurso_id, s.nome AS recurso_nome, t.nome AS tipo, r.n_pessoas, r.estado,
            to_char(lower(r.periodo) AT TIME ZONE 'Europe/Lisbon', 'YYYY-MM-DD"T"HH24:MI') AS inicio,
            to_char(upper(r.periodo) AT TIME ZONE 'Europe/Lisbon', 'YYYY-MM-DD"T"HH24:MI') AS fim
-    FROM reservas r JOIN recursos s ON s.id = r.recurso_id
+    FROM reservas r
+    JOIN recursos s ON s.id = r.recurso_id
+    JOIN tipos_recurso t ON t.id = s.tipo_id
 """
 
 
