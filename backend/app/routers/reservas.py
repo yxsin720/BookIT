@@ -38,13 +38,16 @@ def criar_reserva(dados: NovaReserva, response: Response,
     except DBAPIError as erro:
         codigo = getattr(erro.orig, "pgcode", None)
         if codigo in ("23505", "23P01"):  # chave repetida ou sala ocupada
-            # Se já existe uma reserva com esta chave, é o MESMO pedido repetido
-            # (por exemplo, depois de uma falha de rede): devolve-a, sem duplicar.
-            existente = consultar(SELECT_RESERVA + " WHERE r.chave_idempotencia = :c",
-                                  c=idempotency_key)
+            # Se esta chave já criou uma reserva DESTE utilizador, é o mesmo pedido
+            # repetido (por exemplo, depois de uma falha de rede): devolve-a, sem duplicar.
+            existente = consultar(
+                SELECT_RESERVA + " WHERE r.chave_idempotencia = :c AND r.utilizador_id = :uid",
+                c=idempotency_key, uid=utilizador["id"])
             if existente:
                 response.status_code = 200
                 return existente[0]
+            if codigo == "23505":  # a chave pertence a outro utilizador
+                raise HTTPException(409, "Chave de idempotência já usada por outro pedido")
             raise HTTPException(409, "A sala já está reservada nesse horário")
         if codigo == "P0001":  # trigger da BD: sala inativa, indisponível ou sem capacidade
             raise HTTPException(400, str(erro.orig).split("\n")[0])
